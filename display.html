@@ -110,32 +110,34 @@
       let config = {
         donations: [],
         backgroundUrl: "",
-        fontSize: 48,
-        textPosition: 100,
+        fontSize: 60,
+        textPosition: 500,
         scrollSpeed: 100,
         loopTime: 10,
-        textColor: "#FFD700",
-        showScrolling: true,
+        textColor: "#FF0000",
+        showScrolling: false,
         showScrollingShadow: true,
+        scrollingItemLimit: 50,
         showNewItem: true,
         newItemFontSize: 60,
         newItemColor: "#FF0000",
-        newItemPosition: 300,
+        newItemPosition: 500,
         newItemBlinkInterval: 3,
         newItemDisplayTime: 10,
         showNewItemShadow: true,
         showTotal: true,
-        totalFontSize: 50,
-        totalColor: "#00FF00",
-        totalPosition: 200,
+        totalFontSize: 40,
+        totalColor: "#528515",
+        totalPosition: 600,
         showTotalShadow: true,
         showThankYou: true,
-        thankYouText: "Cảm ơn các bạn đã ủng hộ!",
+        thankYouText: "TRÂN TRỌNG CẢM ƠN QUÝ ÂN NHÂN",
         thankYouFontSize: 40,
-        thankYouColor: "#FFFFFF",
-        thankYouPosition: 500,
+        thankYouColor: "#f56666",
+        thankYouPosition: 700,
         showThankYouShadow: true,
         autoLoopTime: 30,
+        autoLoopItemLimit: 50,
       };
 
       let scrollAnimation;
@@ -184,7 +186,7 @@
 
         // Áp dụng style item mới
         newItemText.style.fontSize = (config.newItemFontSize || 60) + "px";
-        newItemText.style.top = (config.newItemPosition || 300) + "px";
+        newItemText.style.top = (config.newItemPosition || 500) + "px";
         newItemText.style.color = config.newItemColor || "#FF0000";
         newItemText.style.textShadow =
           config.showNewItemShadow !== false
@@ -192,9 +194,9 @@
             : "none";
 
         // Áp dụng style tổng cộng
-        totalText.style.fontSize = (config.totalFontSize || 50) + "px";
-        totalText.style.top = (config.totalPosition || 200) + "px";
-        totalText.style.color = config.totalColor || "#00FF00";
+        totalText.style.fontSize = (config.totalFontSize || 40) + "px";
+        totalText.style.top = (config.totalPosition || 600) + "px";
+        totalText.style.color = config.totalColor || "#528515";
         totalText.style.textShadow =
           config.showTotalShadow !== false
             ? "2px 2px 4px rgba(0, 0, 0, 0.8)"
@@ -213,8 +215,8 @@
 
         // Áp dụng style cảm ơn
         thankYouText.style.fontSize = (config.thankYouFontSize || 40) + "px";
-        thankYouText.style.top = (config.thankYouPosition || 500) + "px";
-        thankYouText.style.color = config.thankYouColor || "#FFFFFF";
+        thankYouText.style.top = (config.thankYouPosition || 700) + "px";
+        thankYouText.style.color = config.thankYouColor || "#f56666";
         thankYouText.style.textShadow =
           config.showThankYouShadow !== false
             ? "2px 2px 4px rgba(0, 0, 0, 0.8)"
@@ -222,21 +224,25 @@
 
         if (config.showThankYou !== false) {
           thankYouText.textContent =
-            config.thankYouText || "Cảm ơn các bạn đã ủng hộ!";
+            config.thankYouText || "TRÂN TRỌNG CẢM ƠN QUÝ ÂN NHÂN";
           thankYouText.style.display = "block";
         } else {
           thankYouText.style.display = "none";
         }
       }
 
-      // Tạo chuỗi chữ chạy
+      // Tạo chuỗi chữ chạy (giới hạn số lượng items)
       function generateScrollText() {
         if (config.donations.length === 0) {
           return "Chưa có thông tin nào được thêm...";
         }
 
+        // Lấy X items gần nhất
+        const limit = config.scrollingItemLimit || 50;
+        const itemsToShow = config.donations.slice(-limit);
+
         return (
-          config.donations
+          itemsToShow
             .map((d) => `${d.name}: ${d.amount.toLocaleString("vi-VN")} VNĐ`)
             .join(" ★ ") + " ★ "
         );
@@ -362,12 +368,18 @@
         }, autoLoopTime);
       }
 
-      // Bắt đầu auto loop hiển thị từng item
+      // Bắt đầu auto loop hiển thị từng item (giới hạn số lượng)
       function startAutoLoop() {
         if (config.donations.length === 0 || !config.showNewItem) return;
 
         // Dừng auto loop cũ nếu có
         stopAutoLoop();
+
+        // Lấy X items gần nhất cho auto loop
+        const limit = config.autoLoopItemLimit || 50;
+        const itemsForLoop = config.donations.slice(-limit);
+
+        if (itemsForLoop.length === 0) return;
 
         currentAutoLoopIndex = 0;
 
@@ -381,23 +393,39 @@
               return;
             }
 
-            // Cập nhật config
-            config.donations = latestConfig.donations;
+            // Cập nhật config và lấy items mới
+            config = latestConfig;
+            const limit = config.autoLoopItemLimit || 50;
+            const updatedItems = config.donations.slice(-limit);
+
+            if (updatedItems.length === 0) {
+              stopAutoLoop();
+              return;
+            }
+
+            // Reset index nếu vượt quá
+            if (currentAutoLoopIndex >= updatedItems.length) {
+              currentAutoLoopIndex = 0;
+            }
+
+            const donation = updatedItems[currentAutoLoopIndex];
+            const donationCopy = { ...donation };
+            showNewItemForAutoLoop(donationCopy);
+
+            currentAutoLoopIndex =
+              (currentAutoLoopIndex + 1) % updatedItems.length;
+          } else {
+            if (currentAutoLoopIndex >= itemsForLoop.length) {
+              currentAutoLoopIndex = 0;
+            }
+
+            const donation = itemsForLoop[currentAutoLoopIndex];
+            const donationCopy = { ...donation };
+            showNewItemForAutoLoop(donationCopy);
+
+            currentAutoLoopIndex =
+              (currentAutoLoopIndex + 1) % itemsForLoop.length;
           }
-
-          if (config.donations.length === 0) {
-            stopAutoLoop();
-            return;
-          }
-
-          const donation = config.donations[currentAutoLoopIndex];
-
-          // Tạo bản sao để tránh ảnh hưởng logic showNewItem
-          const donationCopy = { ...donation };
-          showNewItemForAutoLoop(donationCopy);
-
-          currentAutoLoopIndex =
-            (currentAutoLoopIndex + 1) % config.donations.length;
         }
 
         // Hiển thị item đầu tiên ngay

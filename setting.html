@@ -291,6 +291,20 @@
           <label style="margin: 0">Hiển thị chữ chạy</label>
         </div>
 
+        <div class="form-group">
+          <label>Số lượng items hiển thị (gần nhất):</label>
+          <input
+            type="number"
+            id="scrolling-item-limit"
+            value="50"
+            min="1"
+            max="500"
+          />
+          <small style="color: #666; display: block; margin-top: 5px">
+            Chỉ hiển thị X items gần nhất trên chữ chạy (tối ưu hiệu suất)
+          </small>
+        </div>
+
         <div class="inline-group">
           <div class="form-group">
             <label>Kích thước chữ (px):</label>
@@ -304,7 +318,7 @@
 
         <div class="form-group">
           <label>Màu chữ:</label>
-          <input type="color" id="text-color" value="#FFD700" />
+          <input type="color" id="text-color" value="#FF0000" />
         </div>
 
         <div class="form-group checkbox-group">
@@ -343,6 +357,21 @@
           <label style="margin: 0">Bật hiển thị item mới</label>
         </div>
 
+        <div class="form-group">
+          <label>Số lượng items auto loop (gần nhất):</label>
+          <input
+            type="number"
+            id="auto-loop-item-limit"
+            value="50"
+            min="1"
+            max="500"
+          />
+          <small style="color: #666; display: block; margin-top: 5px">
+            Số lượng items gần nhất được lặp lại khi auto loop (tối ưu hiệu
+            suất)
+          </small>
+        </div>
+
         <div class="inline-group">
           <div class="form-group">
             <label>Kích thước chữ (px):</label>
@@ -356,7 +385,7 @@
           </div>
           <div class="form-group">
             <label>Vị trí dọc (px):</label>
-            <input type="number" id="new-item-position" value="300" min="0" />
+            <input type="number" id="new-item-position" value="500" min="0" />
           </div>
         </div>
 
@@ -428,20 +457,20 @@
             <input
               type="number"
               id="total-font-size"
-              value="50"
+              value="40"
               min="20"
               max="200"
             />
           </div>
           <div class="form-group">
             <label>Vị trí dọc (px):</label>
-            <input type="number" id="total-position" value="200" min="0" />
+            <input type="number" id="total-position" value="600" min="0" />
           </div>
         </div>
 
         <div class="form-group">
           <label>Màu chữ:</label>
-          <input type="color" id="total-color" value="#00FF00" />
+          <input type="color" id="total-color" value="#528515" />
         </div>
 
         <div class="form-group checkbox-group">
@@ -466,7 +495,7 @@
         <div class="form-group">
           <label>Nội dung:</label>
           <textarea id="thank-you-text" placeholder="Nhập nội dung cảm ơn">
-Cảm ơn các bạn đã ủng hộ!</textarea
+TRÂN TRỌNG CẢM ƠN QUÝ ÂN NHÂN</textarea
           >
         </div>
 
@@ -483,13 +512,13 @@ Cảm ơn các bạn đã ủng hộ!</textarea
           </div>
           <div class="form-group">
             <label>Vị trí dọc (px):</label>
-            <input type="number" id="thank-you-position" value="500" min="0" />
+            <input type="number" id="thank-you-position" value="700" min="0" />
           </div>
         </div>
 
         <div class="form-group">
           <label>Màu chữ:</label>
-          <input type="color" id="thank-you-color" value="#FFFFFF" />
+          <input type="color" id="thank-you-color" value="#f56666" />
         </div>
 
         <div class="form-group checkbox-group">
@@ -514,6 +543,7 @@ Cảm ơn các bạn đã ủng hộ!</textarea
         textColor: "#FF0000",
         showScrolling: false,
         showScrollingShadow: true,
+        scrollingItemLimit: 50,
         showNewItem: true,
         newItemFontSize: 60,
         newItemColor: "#FF0000",
@@ -533,6 +563,7 @@ Cảm ơn các bạn đã ủng hộ!</textarea
         thankYouPosition: 700,
         showThankYouShadow: true,
         autoLoopTime: 30,
+        autoLoopItemLimit: 50,
       };
 
       // Load dữ liệu
@@ -659,6 +690,9 @@ Cảm ơn các bạn đã ủng hộ!</textarea
         config.backgroundUrl = document.getElementById("background-url").value;
         config.showScrolling =
           document.getElementById("show-scrolling").checked;
+        config.scrollingItemLimit = parseInt(
+          document.getElementById("scrolling-item-limit").value
+        );
         config.fontSize = parseInt(document.getElementById("font-size").value);
         config.textPosition = parseInt(
           document.getElementById("text-position").value
@@ -674,6 +708,9 @@ Cảm ơn các bạn đã ủng hộ!</textarea
 
         // Cấu hình item mới
         config.showNewItem = document.getElementById("show-new-item").checked;
+        config.autoLoopItemLimit = parseInt(
+          document.getElementById("auto-loop-item-limit").value
+        );
         config.newItemFontSize = parseInt(
           document.getElementById("new-item-font-size").value
         );
@@ -730,23 +767,29 @@ Cảm ơn các bạn đã ủng hộ!</textarea
           config.backgroundUrl || "";
         document.getElementById("show-scrolling").checked =
           config.showScrolling !== false;
-        document.getElementById("font-size").value = config.fontSize;
-        document.getElementById("text-position").value = config.textPosition;
-        document.getElementById("scroll-speed").value = config.scrollSpeed;
-        document.getElementById("loop-time").value = config.loopTime;
+        document.getElementById("scrolling-item-limit").value =
+          config.scrollingItemLimit || 50;
+        document.getElementById("font-size").value = config.fontSize || 60;
+        document.getElementById("text-position").value =
+          config.textPosition || 500;
+        document.getElementById("scroll-speed").value =
+          config.scrollSpeed || 100;
+        document.getElementById("loop-time").value = config.loopTime || 10;
         document.getElementById("text-color").value =
-          config.textColor || "#FFD700";
+          config.textColor || "#FF0000";
         document.getElementById("show-scrolling-shadow").checked =
           config.showScrollingShadow !== false;
 
         document.getElementById("show-new-item").checked =
           config.showNewItem !== false;
+        document.getElementById("auto-loop-item-limit").value =
+          config.autoLoopItemLimit || 50;
         document.getElementById("new-item-font-size").value =
           config.newItemFontSize || 60;
         document.getElementById("new-item-color").value =
           config.newItemColor || "#FF0000";
         document.getElementById("new-item-position").value =
-          config.newItemPosition || 300;
+          config.newItemPosition || 500;
         document.getElementById("new-item-blink-interval").value =
           config.newItemBlinkInterval || 3;
         document.getElementById("new-item-display-time").value =
@@ -759,24 +802,24 @@ Cảm ơn các bạn đã ủng hộ!</textarea
         document.getElementById("show-total").checked =
           config.showTotal !== false;
         document.getElementById("total-font-size").value =
-          config.totalFontSize || 50;
+          config.totalFontSize || 40;
         document.getElementById("total-color").value =
-          config.totalColor || "#00FF00";
+          config.totalColor || "#528515";
         document.getElementById("total-position").value =
-          config.totalPosition || 200;
+          config.totalPosition || 600;
         document.getElementById("show-total-shadow").checked =
           config.showTotalShadow !== false;
 
         document.getElementById("show-thank-you").checked =
           config.showThankYou !== false;
         document.getElementById("thank-you-text").value =
-          config.thankYouText || "Cảm ơn các bạn đã ủng hộ!";
+          config.thankYouText || "TRÂN TRỌNG CẢM ƠN QUÝ ÂN NHÂN";
         document.getElementById("thank-you-font-size").value =
           config.thankYouFontSize || 40;
         document.getElementById("thank-you-color").value =
-          config.thankYouColor || "#FFFFFF";
+          config.thankYouColor || "#f56666";
         document.getElementById("thank-you-position").value =
-          config.thankYouPosition || 500;
+          config.thankYouPosition || 700;
         document.getElementById("show-thank-you-shadow").checked =
           config.showThankYouShadow !== false;
       }
