@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Màn Hình Hiển Thị</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: Arial, sans-serif;
+        overflow: hidden;
+      }
+
+      #display-page {
+        width: 100vw;
+        height: 100vh;
+        overflow: hidden;
+        position: relative;
+        background-size: cover;
+        background-position: center;
+      }
+
+      #scrolling-text {
+        position: absolute;
+        left: 100%;
+        white-space: nowrap;
+        font-weight: bold;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+      }
+
+      #new-item-text {
+        position: absolute;
+        left: 50%;
+        transform: translateX(-50%);
+        white-space: nowrap;
+        font-weight: bold;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+        display: none;
+      }
+
+      #total-text {
+        position: absolute;
+        left: 50%;
+        transform: translateX(-50%);
+        white-space: nowrap;
+        font-weight: bold;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+        display: none;
+      }
+
+      #thank-you-text {
+        position: absolute;
+        left: 50%;
+        transform: translateX(-50%);
+        white-space: nowrap;
+        font-weight: bold;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+        display: none;
+      }
+
+      @keyframes blink {
+        0%,
+        100% {
+          opacity: 1;
+        }
+        50% {
+          opacity: 0;
+        }
+      }
+
+      .blinking {
+        animation: blink 1s ease-in-out infinite;
+      }
+
+      .settings-btn {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 1000;
+        padding: 10px 20px;
+        background: #6c757d;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 14px;
+      }
+
+      .settings-btn:hover {
+        background: #545b62;
+      }
+    </style>
+  </head>
+  <body>
+    <button class="settings-btn" onclick="openSettings()">⚙️ Cấu hình</button>
+
+    <div id="display-page">
+      <div id="scrolling-text"></div>
+      <div id="new-item-text"></div>
+      <div id="total-text"></div>
+      <div id="thank-you-text"></div>
+    </div>
+
+    <script>
+      let config = {
+        donations: [],
+        backgroundUrl: "",
+        fontSize: 48,
+        textPosition: 100,
+        scrollSpeed: 100,
+        loopTime: 10,
+        textColor: "#FFD700",
+        showScrolling: true,
+        showNewItem: true,
+        newItemFontSize: 60,
+        newItemColor: "#FF0000",
+        newItemPosition: 300,
+        newItemBlinkInterval: 3,
+        newItemDisplayTime: 10,
+        showTotal: true,
+        totalFontSize: 50,
+        totalColor: "#00FF00",
+        totalPosition: 200,
+        showThankYou: true,
+        thankYouText: "Cảm ơn các bạn đã ủng hộ!",
+        thankYouFontSize: 40,
+        thankYouColor: "#FFFFFF",
+        thankYouPosition: 500,
+      };
+
+      let scrollAnimation;
+      let newItemTimeout;
+      let newItemBlinkInterval;
+      let lastDonationCount = 0;
+
+      // Load dữ liệu
+      function loadData() {
+        const saved = localStorage.getItem("scrollingTextConfig");
+        if (saved) {
+          config = JSON.parse(saved);
+          lastDonationCount = config.donations.length;
+          applyConfig();
+        }
+      }
+
+      // Áp dụng cấu hình
+      function applyConfig() {
+        const displayPage = document.getElementById("display-page");
+        const scrollingText = document.getElementById("scrolling-text");
+        const newItemText = document.getElementById("new-item-text");
+        const totalText = document.getElementById("total-text");
+        const thankYouText = document.getElementById("thank-you-text");
+
+        // Áp dụng background
+        if (config.backgroundUrl) {
+          displayPage.style.backgroundImage = `url(${config.backgroundUrl})`;
+        }
+
+        // Áp dụng style chữ chạy
+        scrollingText.style.fontSize = config.fontSize + "px";
+        scrollingText.style.top = config.textPosition + "px";
+        scrollingText.style.color = config.textColor || "#FFD700";
+        scrollingText.style.display =
+          config.showScrolling !== false ? "block" : "none";
+
+        // Áp dụng style item mới
+        newItemText.style.fontSize = (config.newItemFontSize || 60) + "px";
+        newItemText.style.top = (config.newItemPosition || 300) + "px";
+        newItemText.style.color = config.newItemColor || "#FF0000";
+
+        // Áp dụng style tổng cộng
+        totalText.style.fontSize = (config.totalFontSize || 50) + "px";
+        totalText.style.top = (config.totalPosition || 200) + "px";
+        totalText.style.color = config.totalColor || "#00FF00";
+
+        // Hiển thị tổng cộng
+        if (config.showTotal !== false) {
+          const total = config.donations.reduce((sum, d) => sum + d.amount, 0);
+          totalText.textContent = `Tổng cộng: ${total.toLocaleString(
+            "vi-VN"
+          )} VNĐ`;
+          totalText.style.display = "block";
+        } else {
+          totalText.style.display = "none";
+        }
+
+        // Áp dụng style cảm ơn
+        thankYouText.style.fontSize = (config.thankYouFontSize || 40) + "px";
+        thankYouText.style.top = (config.thankYouPosition || 500) + "px";
+        thankYouText.style.color = config.thankYouColor || "#FFFFFF";
+
+        if (config.showThankYou !== false) {
+          thankYouText.textContent =
+            config.thankYouText || "Cảm ơn các bạn đã ủng hộ!";
+          thankYouText.style.display = "block";
+        } else {
+          thankYouText.style.display = "none";
+        }
+      }
+
+      // Tạo chuỗi chữ chạy
+      function generateScrollText() {
+        if (config.donations.length === 0) {
+          return "Chưa có thông tin nào được thêm...";
+        }
+
+        return (
+          config.donations
+            .map((d) => `${d.name}: ${d.amount.toLocaleString("vi-VN")} VNĐ`)
+            .join(" ★ ") + " ★ "
+        );
+      }
+
+      // Bắt đầu chữ chạy
+      function startScrolling() {
+        const scrollingText = document.getElementById("scrolling-text");
+
+        if (config.showScrolling === false) {
+          scrollingText.style.display = "none";
+          return;
+        }
+
+        scrollingText.style.display = "block";
+        const text = generateScrollText();
+        scrollingText.textContent = text;
+
+        if (scrollAnimation) {
+          cancelAnimationFrame(scrollAnimation);
+        }
+
+        let position = window.innerWidth;
+        const textWidth = scrollingText.offsetWidth;
+        let hasFinishedOnce = false;
+        let finishTime = null;
+
+        function animate() {
+          position -= config.scrollSpeed / 60;
+
+          if (position < -textWidth) {
+            if (!hasFinishedOnce) {
+              hasFinishedOnce = true;
+              finishTime = Date.now();
+            }
+
+            const timeSinceFinish = (Date.now() - finishTime) / 1000;
+
+            if (timeSinceFinish >= config.loopTime) {
+              position = window.innerWidth;
+              hasFinishedOnce = false;
+              finishTime = null;
+
+              const newText = generateScrollText();
+              scrollingText.textContent = newText;
+            } else {
+              position = -textWidth;
+            }
+          }
+
+          scrollingText.style.left = position + "px";
+          scrollAnimation = requestAnimationFrame(animate);
+        }
+
+        animate();
+      }
+
+      let newItemHideTimeout;
+      // Hiển thị item mới
+      function showNewItem(donation) {
+        if (!config.showNewItem) return;
+
+        const newItemText = document.getElementById("new-item-text");
+        newItemText.textContent = `${
+          donation.name
+        }: ${donation.amount.toLocaleString("vi-VN")} VNĐ`;
+        newItemText.style.display = "block";
+        newItemText.style.opacity = "1";
+
+        if (newItemTimeout) clearTimeout(newItemTimeout);
+        if (newItemBlinkInterval) clearInterval(newItemBlinkInterval);
+        if (newItemHideTimeout) clearTimeout(newItemHideTimeout);
+
+        function doBlink() {
+          let count = 0;
+          const blinkTimes = 3;
+          const blinkSpeed = 250;
+
+          const blinkTimer = setInterval(() => {
+            if (count >= blinkTimes * 2) {
+              clearInterval(blinkTimer);
+              newItemText.style.opacity = "1";
+              return;
+            }
+
+            newItemText.style.opacity = count % 2 === 0 ? "0" : "1";
+            count++;
+          }, blinkSpeed);
+        }
+
+        newItemTimeout = setTimeout(() => {
+          doBlink();
+
+          newItemBlinkInterval = setInterval(() => {
+            doBlink();
+          }, config.newItemBlinkInterval * 1000);
+        }, config.newItemBlinkInterval * 1000);
+
+        if (newItemHideTimeout) clearTimeout(newItemHideTimeout);
+        newItemHideTimeout = setTimeout(() => {
+          newItemText.style.display = "none";
+        }, (config.newItemDisplayTime || 10) * 1000);
+      }
+
+      // Kiểm tra thay đổi dữ liệu
+      function checkForUpdates() {
+        const saved = localStorage.getItem("scrollingTextConfig");
+        if (saved) {
+          const newConfig = JSON.parse(saved);
+
+          if (newConfig.donations.length > lastDonationCount) {
+            const newDonation =
+              newConfig.donations[newConfig.donations.length - 1];
+            showNewItem(newDonation);
+
+            const scrollingText = document.getElementById("scrolling-text");
+            const currentPos = parseFloat(scrollingText.style.left) || 0;
+            const textWidth = scrollingText.offsetWidth;
+
+            if (currentPos <= -textWidth) {
+              config = newConfig;
+              lastDonationCount = config.donations.length;
+              applyConfig();
+              startScrolling();
+            } else {
+              config = newConfig;
+              lastDonationCount = config.donations.length;
+              applyConfig();
+            }
+          } else {
+            config = newConfig;
+            lastDonationCount = config.donations.length;
+            applyConfig();
+          }
+        }
+      }
+
+      // Mở trang cấu hình
+      function openSettings() {
+        window.open("setting.html", "_blank");
+      }
+
+      // Khởi động
+      window.addEventListener("load", () => {
+        loadData();
+        startScrolling();
+
+        setInterval(checkForUpdates, 1000);
+      });
+
+      // Cập nhật khi thay đổi kích thước màn hình
+      window.addEventListener("resize", () => {
+        startScrolling();
+      });
+    </script>
+  </body>
+</html>

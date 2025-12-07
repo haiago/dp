@@ -1,0 +1,714 @@
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Cấu Hình Chữ Chạy</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: Arial, sans-serif;
+        background: #f5f5f5;
+      }
+
+      #config-page {
+        padding: 20px;
+        max-width: 800px;
+        margin: 0 auto;
+        min-height: 100vh;
+      }
+
+      #config-page h1 {
+        margin-bottom: 20px;
+        color: #333;
+      }
+
+      .config-section {
+        background: white;
+        padding: 20px;
+        margin-bottom: 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      }
+
+      .config-section h2 {
+        margin-bottom: 15px;
+        color: #555;
+        font-size: 18px;
+      }
+
+      .form-group {
+        margin-bottom: 15px;
+      }
+
+      .form-group label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: bold;
+        color: #666;
+      }
+
+      .form-group input[type="text"],
+      .form-group input[type="number"],
+      .form-group input[type="color"],
+      .form-group textarea {
+        width: 100%;
+        padding: 8px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-size: 14px;
+      }
+
+      .form-group textarea {
+        min-height: 80px;
+        resize: vertical;
+        font-family: Arial, sans-serif;
+      }
+
+      .form-group input[type="color"] {
+        height: 40px;
+        cursor: pointer;
+      }
+
+      .btn {
+        padding: 10px 20px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 14px;
+        margin-right: 10px;
+      }
+
+      .btn-primary {
+        background: #007bff;
+        color: white;
+      }
+
+      .btn-primary:hover {
+        background: #0056b3;
+      }
+
+      .btn-success {
+        background: #28a745;
+        color: white;
+      }
+
+      .btn-success:hover {
+        background: #218838;
+      }
+
+      .btn-danger {
+        background: #dc3545;
+        color: white;
+      }
+
+      .btn-danger:hover {
+        background: #c82333;
+      }
+
+      .btn-secondary {
+        background: #6c757d;
+        color: white;
+      }
+
+      .btn-secondary:hover {
+        background: #545b62;
+      }
+
+      #donation-list {
+        list-style: none;
+        padding: 0;
+      }
+
+      #donation-list li {
+        padding: 10px;
+        background: #f8f9fa;
+        margin-bottom: 5px;
+        border-radius: 4px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      #donation-list .donation-info {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+      }
+
+      #donation-list .donation-name {
+        font-weight: bold;
+        color: #333;
+      }
+
+      #donation-list .donation-amount {
+        color: #28a745;
+        font-size: 16px;
+      }
+
+      .inline-group {
+        display: flex;
+        gap: 10px;
+      }
+
+      .inline-group .form-group {
+        flex: 1;
+      }
+
+      .top-buttons {
+        margin-bottom: 20px;
+        display: flex;
+        gap: 10px;
+      }
+
+      .amount-preview {
+        margin-top: 5px;
+        font-size: 14px;
+        color: #28a745;
+        font-weight: bold;
+        min-height: 20px;
+      }
+
+      .total-display {
+        margin-top: 10px;
+        padding: 15px;
+        background: #e8f5e9;
+        border-radius: 4px;
+        text-align: center;
+      }
+
+      .total-display .total-label {
+        font-size: 14px;
+        color: #666;
+        margin-bottom: 5px;
+      }
+
+      .total-display .total-amount {
+        font-size: 24px;
+        font-weight: bold;
+        color: #28a745;
+      }
+
+      .checkbox-group {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .checkbox-group input[type="checkbox"] {
+        width: auto;
+        cursor: pointer;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="config-page">
+      <h1>Cấu Hình Chữ Chạy</h1>
+
+      <div class="top-buttons">
+        <button class="btn btn-secondary" onclick="openDisplay()">
+          📺 Mở Màn Hình Hiển Thị
+        </button>
+      </div>
+
+      <!-- Thêm donation -->
+      <div class="config-section">
+        <h2>Thêm Thông Tin</h2>
+        <div class="inline-group">
+          <div class="form-group">
+            <label>Tên:</label>
+            <input type="text" id="donor-name" placeholder="Nhập tên" />
+          </div>
+          <div class="form-group">
+            <label>Số tiền:</label>
+            <input
+              type="text"
+              id="donor-amount"
+              placeholder="Nhập số tiền"
+              oninput="formatAmountInput(this)"
+            />
+            <div class="amount-preview" id="amount-preview"></div>
+          </div>
+        </div>
+        <button class="btn btn-primary" onclick="addDonation()">Thêm</button>
+
+        <!-- Hiển thị tổng cộng -->
+        <div class="total-display">
+          <div class="total-label">TỔNG CỘNG</div>
+          <div class="total-amount" id="total-amount">0 VNĐ</div>
+        </div>
+      </div>
+
+      <!-- Danh sách donations -->
+      <div class="config-section">
+        <h2>Danh Sách</h2>
+        <ul id="donation-list"></ul>
+        <button class="btn btn-danger" onclick="clearAllDonations()">
+          Xóa Tất Cả
+        </button>
+      </div>
+
+      <!-- Cấu hình hiển thị -->
+      <div class="config-section">
+        <h2>Cấu Hình Chữ Chạy</h2>
+
+        <div class="form-group">
+          <label>URL Background:</label>
+          <input
+            type="text"
+            id="background-url"
+            placeholder="https://example.com/image.jpg"
+          />
+        </div>
+
+        <div class="form-group checkbox-group">
+          <input type="checkbox" id="show-scrolling" checked />
+          <label style="margin: 0">Hiển thị chữ chạy</label>
+        </div>
+
+        <div class="inline-group">
+          <div class="form-group">
+            <label>Kích thước chữ (px):</label>
+            <input type="number" id="font-size" value="48" min="20" max="200" />
+          </div>
+          <div class="form-group">
+            <label>Vị trí dọc (px):</label>
+            <input type="number" id="text-position" value="100" min="0" />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Màu chữ:</label>
+          <input type="color" id="text-color" value="#FFD700" />
+        </div>
+
+        <div class="inline-group">
+          <div class="form-group">
+            <label>Tốc độ (px/s):</label>
+            <input
+              type="number"
+              id="scroll-speed"
+              value="100"
+              min="10"
+              max="500"
+            />
+          </div>
+          <div class="form-group">
+            <label>Thời gian lặp lại (giây):</label>
+            <input type="number" id="loop-time" value="10" min="5" max="60" />
+          </div>
+        </div>
+
+        <button class="btn btn-success" onclick="saveConfig()">
+          Lưu Cấu Hình
+        </button>
+      </div>
+
+      <!-- Cấu hình hiển thị item mới -->
+      <div class="config-section">
+        <h2>Cấu Hình Hiển Thị Item Mới</h2>
+
+        <div class="form-group checkbox-group">
+          <input type="checkbox" id="show-new-item" checked />
+          <label style="margin: 0">Bật hiển thị item mới</label>
+        </div>
+
+        <div class="inline-group">
+          <div class="form-group">
+            <label>Kích thước chữ (px):</label>
+            <input
+              type="number"
+              id="new-item-font-size"
+              value="60"
+              min="20"
+              max="200"
+            />
+          </div>
+          <div class="form-group">
+            <label>Vị trí dọc (px):</label>
+            <input type="number" id="new-item-position" value="300" min="0" />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Màu chữ:</label>
+          <input type="color" id="new-item-color" value="#FF0000" />
+        </div>
+
+        <div class="inline-group">
+          <div class="form-group">
+            <label>Thời gian nhấp nháy (giây):</label>
+            <input
+              type="number"
+              id="new-item-blink-interval"
+              value="3"
+              min="1"
+              max="10"
+            />
+          </div>
+          <div class="form-group">
+            <label>Thời gian hiển thị (giây):</label>
+            <input
+              type="number"
+              id="new-item-display-time"
+              value="10"
+              min="3"
+              max="60"
+            />
+          </div>
+        </div>
+
+        <button class="btn btn-success" onclick="saveConfig()">
+          Lưu Cấu Hình
+        </button>
+      </div>
+
+      <!-- Cấu hình hiển thị tổng cộng -->
+      <div class="config-section">
+        <h2>Cấu Hình Hiển Thị Tổng Cộng</h2>
+
+        <div class="form-group checkbox-group">
+          <input type="checkbox" id="show-total" checked />
+          <label style="margin: 0">Hiển thị tổng cộng</label>
+        </div>
+
+        <div class="inline-group">
+          <div class="form-group">
+            <label>Kích thước chữ (px):</label>
+            <input
+              type="number"
+              id="total-font-size"
+              value="50"
+              min="20"
+              max="200"
+            />
+          </div>
+          <div class="form-group">
+            <label>Vị trí dọc (px):</label>
+            <input type="number" id="total-position" value="200" min="0" />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Màu chữ:</label>
+          <input type="color" id="total-color" value="#00FF00" />
+        </div>
+
+        <button class="btn btn-success" onclick="saveConfig()">
+          Lưu Cấu Hình
+        </button>
+      </div>
+
+      <!-- Cấu hình dòng cảm ơn -->
+      <div class="config-section">
+        <h2>Cấu Hình Dòng Cảm Ơn</h2>
+
+        <div class="form-group checkbox-group">
+          <input type="checkbox" id="show-thank-you" checked />
+          <label style="margin: 0">Hiển thị dòng cảm ơn</label>
+        </div>
+
+        <div class="form-group">
+          <label>Nội dung:</label>
+          <textarea id="thank-you-text" placeholder="Nhập nội dung cảm ơn">
+Cảm ơn các bạn đã ủng hộ!</textarea
+          >
+        </div>
+
+        <div class="inline-group">
+          <div class="form-group">
+            <label>Kích thước chữ (px):</label>
+            <input
+              type="number"
+              id="thank-you-font-size"
+              value="40"
+              min="20"
+              max="200"
+            />
+          </div>
+          <div class="form-group">
+            <label>Vị trí dọc (px):</label>
+            <input type="number" id="thank-you-position" value="500" min="0" />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Màu chữ:</label>
+          <input type="color" id="thank-you-color" value="#FFFFFF" />
+        </div>
+
+        <button class="btn btn-success" onclick="saveConfig()">
+          Lưu Cấu Hình
+        </button>
+      </div>
+    </div>
+
+    <script>
+      let config = {
+        donations: [],
+        backgroundUrl: "",
+        fontSize: 48,
+        textPosition: 100,
+        scrollSpeed: 100,
+        loopTime: 10,
+        textColor: "#FFD700",
+        showScrolling: true,
+        showNewItem: true,
+        newItemFontSize: 60,
+        newItemColor: "#FF0000",
+        newItemPosition: 300,
+        newItemBlinkInterval: 3,
+        newItemDisplayTime: 10,
+        showTotal: true,
+        totalFontSize: 50,
+        totalColor: "#00FF00",
+        totalPosition: 200,
+        showThankYou: true,
+        thankYouText: "Cảm ơn các bạn đã ủng hộ!",
+        thankYouFontSize: 40,
+        thankYouColor: "#FFFFFF",
+        thankYouPosition: 500,
+      };
+
+      // Load dữ liệu
+      function loadData() {
+        const saved = localStorage.getItem("scrollingTextConfig");
+        if (saved) {
+          config = JSON.parse(saved);
+          applyConfig();
+          updateDonationList();
+          updateTotalDisplay();
+        }
+      }
+
+      function formatAmountInput() {
+        const input = document.getElementById("donor-amount");
+        const preview = document.getElementById("amount-preview");
+        let value = input.value.replace(/[^\d]/g, "");
+        if (value === "") {
+          preview.textContent = "";
+          return;
+        }
+        const number = parseInt(value, 10);
+        preview.textContent = number.toLocaleString("vi-VN", {
+          style: "currency",
+          currency: "VND",
+        });
+      }
+
+      // Cập nhật hiển thị tổng
+      function updateTotalDisplay() {
+        const totalElement = document.getElementById("total-amount");
+        const total = config.donations.reduce((sum, d) => sum + d.amount, 0);
+        totalElement.textContent = total.toLocaleString("vi-VN") + " VNĐ";
+      }
+
+      // Lưu dữ liệu
+      function saveData() {
+        localStorage.setItem("scrollingTextConfig", JSON.stringify(config));
+      }
+
+      // Thêm donation
+      function addDonation() {
+        const name = document.getElementById("donor-name").value.trim();
+        const amountInput = document
+          .getElementById("donor-amount")
+          .value.trim();
+
+        if (name && amountInput) {
+          const amount = parseFloat(amountInput.replace(/[^\d]/g, ""));
+          config.donations.push({ name, amount });
+          saveData();
+          updateDonationList();
+          updateTotalDisplay();
+
+          // Reset form
+          document.getElementById("donor-name").value = "";
+          document.getElementById("donor-amount").value = "";
+          document.getElementById("amount-preview").textContent = "";
+
+          alert("Đã thêm thành công!");
+        } else {
+          alert("Vui lòng nhập đầy đủ thông tin!");
+        }
+      }
+
+      // Xóa donation
+      function deleteDonation(index) {
+        config.donations.splice(index, 1);
+        saveData();
+        updateDonationList();
+        updateTotalDisplay();
+      }
+
+      // Xóa tất cả
+      function clearAllDonations() {
+        if (confirm("Bạn có chắc muốn xóa tất cả?")) {
+          config.donations = [];
+          saveData();
+          updateDonationList();
+          updateTotalDisplay();
+        }
+      }
+
+      // Cập nhật danh sách hiển thị
+      function updateDonationList() {
+        const list = document.getElementById("donation-list");
+        list.innerHTML = "";
+
+        if (config.donations.length === 0) {
+          list.innerHTML = "<li>Chưa có dữ liệu</li>";
+          return;
+        }
+
+        config.donations.forEach((donation, index) => {
+          const li = document.createElement("li");
+          li.innerHTML = `
+                    <span>${donation.name}: ${donation.amount.toLocaleString(
+            "vi-VN"
+          )} VNĐ</span>
+                    <button class="btn btn-danger" onclick="deleteDonation(${index})">Xóa</button>
+                `;
+          list.appendChild(li);
+        });
+      }
+
+      // Lưu cấu hình
+      function saveConfig() {
+        config.backgroundUrl = document.getElementById("background-url").value;
+        config.showScrolling =
+          document.getElementById("show-scrolling").checked;
+        config.fontSize = parseInt(document.getElementById("font-size").value);
+        config.textPosition = parseInt(
+          document.getElementById("text-position").value
+        );
+        config.scrollSpeed = parseInt(
+          document.getElementById("scroll-speed").value
+        );
+        config.loopTime = parseInt(document.getElementById("loop-time").value);
+        config.textColor = document.getElementById("text-color").value;
+
+        // Cấu hình item mới
+        config.showNewItem = document.getElementById("show-new-item").checked;
+        config.newItemFontSize = parseInt(
+          document.getElementById("new-item-font-size").value
+        );
+        config.newItemColor = document.getElementById("new-item-color").value;
+        config.newItemPosition = parseInt(
+          document.getElementById("new-item-position").value
+        );
+        config.newItemBlinkInterval = parseInt(
+          document.getElementById("new-item-blink-interval").value
+        );
+        config.newItemDisplayTime = parseInt(
+          document.getElementById("new-item-display-time").value
+        );
+
+        // Cấu hình tổng cộng
+        config.showTotal = document.getElementById("show-total").checked;
+        config.totalFontSize = parseInt(
+          document.getElementById("total-font-size").value
+        );
+        config.totalColor = document.getElementById("total-color").value;
+        config.totalPosition = parseInt(
+          document.getElementById("total-position").value
+        );
+
+        // Cấu hình cảm ơn
+        config.showThankYou = document.getElementById("show-thank-you").checked;
+        config.thankYouText = document.getElementById("thank-you-text").value;
+        config.thankYouFontSize = parseInt(
+          document.getElementById("thank-you-font-size").value
+        );
+        config.thankYouColor = document.getElementById("thank-you-color").value;
+        config.thankYouPosition = parseInt(
+          document.getElementById("thank-you-position").value
+        );
+
+        saveData();
+        alert("Đã lưu cấu hình!");
+      }
+
+      // Áp dụng cấu hình lên form
+      function applyConfig() {
+        document.getElementById("background-url").value =
+          config.backgroundUrl || "";
+        document.getElementById("show-scrolling").checked =
+          config.showScrolling !== false;
+        document.getElementById("font-size").value = config.fontSize;
+        document.getElementById("text-position").value = config.textPosition;
+        document.getElementById("scroll-speed").value = config.scrollSpeed;
+        document.getElementById("loop-time").value = config.loopTime;
+        document.getElementById("text-color").value =
+          config.textColor || "#FFD700";
+
+        document.getElementById("show-new-item").checked =
+          config.showNewItem !== false;
+        document.getElementById("new-item-font-size").value =
+          config.newItemFontSize || 60;
+        document.getElementById("new-item-color").value =
+          config.newItemColor || "#FF0000";
+        document.getElementById("new-item-position").value =
+          config.newItemPosition || 300;
+        document.getElementById("new-item-blink-interval").value =
+          config.newItemBlinkInterval || 3;
+        document.getElementById("new-item-display-time").value =
+          config.newItemDisplayTime || 10;
+
+        document.getElementById("show-total").checked =
+          config.showTotal !== false;
+        document.getElementById("total-font-size").value =
+          config.totalFontSize || 50;
+        document.getElementById("total-color").value =
+          config.totalColor || "#00FF00";
+        document.getElementById("total-position").value =
+          config.totalPosition || 200;
+
+        document.getElementById("show-thank-you").checked =
+          config.showThankYou !== false;
+        document.getElementById("thank-you-text").value =
+          config.thankYouText || "Cảm ơn các bạn đã ủng hộ!";
+        document.getElementById("thank-you-font-size").value =
+          config.thankYouFontSize || 40;
+        document.getElementById("thank-you-color").value =
+          config.thankYouColor || "#FFFFFF";
+        document.getElementById("thank-you-position").value =
+          config.thankYouPosition || 500;
+      }
+
+      // Mở trang hiển thị
+      function openDisplay() {
+        window.open("display.html", "_blank");
+      }
+
+      // Khởi động
+      window.addEventListener("load", () => {
+        loadData();
+      });
+
+      // Hỗ trợ Enter key để thêm nhanh
+      document.addEventListener("DOMContentLoaded", () => {
+        document
+          .getElementById("donor-name")
+          .addEventListener("keypress", (e) => {
+            if (e.key === "Enter") {
+              document.getElementById("donor-amount").focus();
+            }
+          });
+
+        document
+          .getElementById("donor-amount")
+          .addEventListener("keypress", (e) => {
+            if (e.key === "Enter") {
+              addDonation();
+            }
+          });
+      });
+    </script>
+  </body>
+</html>
