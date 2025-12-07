@@ -540,12 +540,11 @@ Cảm ơn các bạn đã ủng hộ!</textarea
         const saved = localStorage.getItem("scrollingTextConfig");
         if (saved) {
           config = JSON.parse(saved);
-          applyConfig();
-          updateDonationList();
-          updateTotalDisplay();
-        } else {
-          applyConfig();
         }
+        // Luôn apply config để hiển thị giá trị (dù từ localStorage hay mặc định)
+        applyConfig();
+        updateDonationList();
+        updateTotalDisplay();
       }
 
       function formatAmountInput() {
