@@ -268,9 +268,14 @@
       <div class="config-section">
         <h2>Danh Sách</h2>
         <ul id="donation-list"></ul>
-        <button class="btn btn-danger" onclick="clearAllDonations()">
-          Xóa Tất Cả
-        </button>
+        <div style="margin-top: 10px">
+          <button class="btn btn-success" onclick="exportToCSV()">
+            📥 Xuất CSV
+          </button>
+          <button class="btn btn-danger" onclick="clearAllDonations()">
+            Xóa Tất Cả
+          </button>
+        </div>
       </div>
 
       <!-- Cấu hình hiển thị -->
@@ -657,6 +662,55 @@ TRÂN TRỌNG CẢM ƠN QUÝ ÂN NHÂN</textarea
           updateDonationList();
           updateTotalDisplay();
         }
+      }
+
+      // Xuất file CSV
+      function exportToCSV() {
+        if (config.donations.length === 0) {
+          alert("Chưa có dữ liệu để xuất!");
+          return;
+        }
+
+        // Tạo header CSV
+        let csvContent = "STT,Tên,Số tiền (VNĐ),Giữ hiển thị\n";
+
+        // Thêm từng dòng dữ liệu
+        config.donations.forEach((donation, index) => {
+          const keepVisibleText = donation.keepVisible ? "Có" : "Không";
+          csvContent += `${index + 1},"${donation.name}",${
+            donation.amount
+          },${keepVisibleText}\n`;
+        });
+
+        // Thêm dòng tổng cộng
+        const total = config.donations.reduce((sum, d) => sum + d.amount, 0);
+        csvContent += `\nTổng cộng,,${total},\n`;
+
+        // Tạo Blob với BOM để Excel đọc được tiếng Việt
+        const BOM = "\uFEFF";
+        const blob = new Blob([BOM + csvContent], {
+          type: "text/csv;charset=utf-8;",
+        });
+
+        // Tạo link download
+        const link = document.createElement("a");
+        const url = URL.createObjectURL(blob);
+
+        // Tạo tên file với timestamp
+        const now = new Date();
+        const dateStr = now.toISOString().slice(0, 10).replace(/-/g, "");
+        const timeStr = now.toTimeString().slice(0, 8).replace(/:/g, "");
+        const filename = `danh-sach-ung-ho_${dateStr}_${timeStr}.csv`;
+
+        link.setAttribute("href", url);
+        link.setAttribute("download", filename);
+        link.style.visibility = "hidden";
+
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+
+        alert(`Đã xuất ${config.donations.length} items vào file ${filename}`);
       }
 
       // Cập nhật danh sách hiển thị
