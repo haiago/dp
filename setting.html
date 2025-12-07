@@ -123,6 +123,8 @@
       #donation-list {
         list-style: none;
         padding: 0;
+        max-height: 300px;
+        overflow-y: auto;
       }
 
       #donation-list li {
@@ -305,6 +307,11 @@
           <input type="color" id="text-color" value="#FFD700" />
         </div>
 
+        <div class="form-group checkbox-group">
+          <input type="checkbox" id="show-scrolling-shadow" checked />
+          <label style="margin: 0">Hiển thị bóng chữ</label>
+        </div>
+
         <div class="inline-group">
           <div class="form-group">
             <label>Tốc độ (px/s):</label>
@@ -356,6 +363,11 @@
         <div class="form-group">
           <label>Màu chữ:</label>
           <input type="color" id="new-item-color" value="#FF0000" />
+        </div>
+
+        <div class="form-group checkbox-group">
+          <input type="checkbox" id="show-new-item-shadow" checked />
+          <label style="margin: 0">Hiển thị bóng chữ</label>
         </div>
 
         <div class="inline-group">
@@ -432,6 +444,11 @@
           <input type="color" id="total-color" value="#00FF00" />
         </div>
 
+        <div class="form-group checkbox-group">
+          <input type="checkbox" id="show-total-shadow" checked />
+          <label style="margin: 0">Hiển thị bóng chữ</label>
+        </div>
+
         <button class="btn btn-success" onclick="saveConfig()">
           Lưu Cấu Hình
         </button>
@@ -475,6 +492,11 @@ Cảm ơn các bạn đã ủng hộ!</textarea
           <input type="color" id="thank-you-color" value="#FFFFFF" />
         </div>
 
+        <div class="form-group checkbox-group">
+          <input type="checkbox" id="show-thank-you-shadow" checked />
+          <label style="margin: 0">Hiển thị bóng chữ</label>
+        </div>
+
         <button class="btn btn-success" onclick="saveConfig()">
           Lưu Cấu Hình
         </button>
@@ -490,22 +512,26 @@ Cảm ơn các bạn đã ủng hộ!</textarea
         scrollSpeed: 100,
         loopTime: 10,
         textColor: "#FF0000",
-        showScrolling: true,
+        showScrolling: false,
+        showScrollingShadow: true,
         showNewItem: true,
         newItemFontSize: 60,
         newItemColor: "#FF0000",
         newItemPosition: 500,
         newItemBlinkInterval: 3,
         newItemDisplayTime: 10,
+        showNewItemShadow: true,
         showTotal: true,
         totalFontSize: 40,
         totalColor: "#528515",
         totalPosition: 600,
+        showTotalShadow: true,
         showThankYou: true,
         thankYouText: "TRÂN TRỌNG CẢM ƠN QUÝ ÂN NHÂN",
         thankYouFontSize: 40,
         thankYouColor: "#f56666",
         thankYouPosition: 700,
+        showThankYouShadow: true,
         autoLoopTime: 30,
       };
 
@@ -641,6 +667,9 @@ Cảm ơn các bạn đã ủng hộ!</textarea
         );
         config.loopTime = parseInt(document.getElementById("loop-time").value);
         config.textColor = document.getElementById("text-color").value;
+        config.showScrollingShadow = document.getElementById(
+          "show-scrolling-shadow"
+        ).checked;
 
         // Cấu hình item mới
         config.showNewItem = document.getElementById("show-new-item").checked;
@@ -660,6 +689,9 @@ Cảm ơn các bạn đã ủng hộ!</textarea
         config.autoLoopTime = parseInt(
           document.getElementById("auto-loop-time").value
         );
+        config.showNewItemShadow = document.getElementById(
+          "show-new-item-shadow"
+        ).checked;
 
         // Cấu hình tổng cộng
         config.showTotal = document.getElementById("show-total").checked;
@@ -670,6 +702,8 @@ Cảm ơn các bạn đã ủng hộ!</textarea
         config.totalPosition = parseInt(
           document.getElementById("total-position").value
         );
+        config.showTotalShadow =
+          document.getElementById("show-total-shadow").checked;
 
         // Cấu hình cảm ơn
         config.showThankYou = document.getElementById("show-thank-you").checked;
@@ -681,6 +715,9 @@ Cảm ơn các bạn đã ủng hộ!</textarea
         config.thankYouPosition = parseInt(
           document.getElementById("thank-you-position").value
         );
+        config.showThankYouShadow = document.getElementById(
+          "show-thank-you-shadow"
+        ).checked;
 
         saveData();
         alert("Đã lưu cấu hình!");
@@ -698,6 +735,8 @@ Cảm ơn các bạn đã ủng hộ!</textarea
         document.getElementById("loop-time").value = config.loopTime;
         document.getElementById("text-color").value =
           config.textColor || "#FFD700";
+        document.getElementById("show-scrolling-shadow").checked =
+          config.showScrollingShadow !== false;
 
         document.getElementById("show-new-item").checked =
           config.showNewItem !== false;
@@ -713,6 +752,8 @@ Cảm ơn các bạn đã ủng hộ!</textarea
           config.newItemDisplayTime || 10;
         document.getElementById("auto-loop-time").value =
           config.autoLoopTime || 30;
+        document.getElementById("show-new-item-shadow").checked =
+          config.showNewItemShadow !== false;
 
         document.getElementById("show-total").checked =
           config.showTotal !== false;
@@ -722,6 +763,8 @@ Cảm ơn các bạn đã ủng hộ!</textarea
           config.totalColor || "#00FF00";
         document.getElementById("total-position").value =
           config.totalPosition || 200;
+        document.getElementById("show-total-shadow").checked =
+          config.showTotalShadow !== false;
 
         document.getElementById("show-thank-you").checked =
           config.showThankYou !== false;
@@ -733,6 +776,8 @@ Cảm ơn các bạn đã ủng hộ!</textarea
           config.thankYouColor || "#FFFFFF";
         document.getElementById("thank-you-position").value =
           config.thankYouPosition || 500;
+        document.getElementById("show-thank-you-shadow").checked =
+          config.showThankYouShadow !== false;
       }
 
       // Mở trang hiển thị

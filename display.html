@@ -97,7 +97,7 @@
     </style>
   </head>
   <body>
-    <button class="settings-btn" onclick="openSettings()">⚙️ Cấu hình</button>
+    <!-- <button class="settings-btn" onclick="openSettings()">⚙️ Cấu hình</button>-->
 
     <div id="display-page">
       <div id="scrolling-text"></div>
@@ -116,21 +116,25 @@
         loopTime: 10,
         textColor: "#FFD700",
         showScrolling: true,
+        showScrollingShadow: true,
         showNewItem: true,
         newItemFontSize: 60,
         newItemColor: "#FF0000",
         newItemPosition: 300,
         newItemBlinkInterval: 3,
         newItemDisplayTime: 10,
+        showNewItemShadow: true,
         showTotal: true,
         totalFontSize: 50,
         totalColor: "#00FF00",
         totalPosition: 200,
+        showTotalShadow: true,
         showThankYou: true,
         thankYouText: "Cảm ơn các bạn đã ủng hộ!",
         thankYouFontSize: 40,
         thankYouColor: "#FFFFFF",
         thankYouPosition: 500,
+        showThankYouShadow: true,
         autoLoopTime: 30,
       };
 
@@ -173,21 +177,33 @@
         scrollingText.style.color = config.textColor || "#FFD700";
         scrollingText.style.display =
           config.showScrolling !== false ? "block" : "none";
+        scrollingText.style.textShadow =
+          config.showScrollingShadow !== false
+            ? "2px 2px 4px rgba(0, 0, 0, 0.8)"
+            : "none";
 
         // Áp dụng style item mới
         newItemText.style.fontSize = (config.newItemFontSize || 60) + "px";
         newItemText.style.top = (config.newItemPosition || 300) + "px";
         newItemText.style.color = config.newItemColor || "#FF0000";
+        newItemText.style.textShadow =
+          config.showNewItemShadow !== false
+            ? "2px 2px 4px rgba(0, 0, 0, 0.8)"
+            : "none";
 
         // Áp dụng style tổng cộng
         totalText.style.fontSize = (config.totalFontSize || 50) + "px";
         totalText.style.top = (config.totalPosition || 200) + "px";
         totalText.style.color = config.totalColor || "#00FF00";
+        totalText.style.textShadow =
+          config.showTotalShadow !== false
+            ? "2px 2px 4px rgba(0, 0, 0, 0.8)"
+            : "none";
 
         // Hiển thị tổng cộng
         if (config.showTotal !== false) {
           const total = config.donations.reduce((sum, d) => sum + d.amount, 0);
-          totalText.textContent = `Tổng số: ${total.toLocaleString(
+          totalText.textContent = `Tổng cộng: ${total.toLocaleString(
             "vi-VN"
           )} VNĐ`;
           totalText.style.display = "block";
@@ -199,6 +215,10 @@
         thankYouText.style.fontSize = (config.thankYouFontSize || 40) + "px";
         thankYouText.style.top = (config.thankYouPosition || 500) + "px";
         thankYouText.style.color = config.thankYouColor || "#FFFFFF";
+        thankYouText.style.textShadow =
+          config.showThankYouShadow !== false
+            ? "2px 2px 4px rgba(0, 0, 0, 0.8)"
+            : "none";
 
         if (config.showThankYou !== false) {
           thankYouText.textContent =
