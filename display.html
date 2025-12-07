@@ -131,12 +131,18 @@
         thankYouFontSize: 40,
         thankYouColor: "#FFFFFF",
         thankYouPosition: 500,
+        autoLoopTime: 30,
       };
 
       let scrollAnimation;
       let newItemTimeout;
       let newItemBlinkInterval;
+      let newItemHideTimeout;
       let lastDonationCount = 0;
+      let autoLoopTimeout;
+      let autoLoopInterval;
+      let currentAutoLoopIndex = 0;
+      let lastNewItemTime = Date.now();
 
       // Load dữ liệu
       function loadData() {
@@ -181,7 +187,7 @@
         // Hiển thị tổng cộng
         if (config.showTotal !== false) {
           const total = config.donations.reduce((sum, d) => sum + d.amount, 0);
-          totalText.textContent = `Tổng cộng: ${total.toLocaleString(
+          totalText.textContent = `Tổng số: ${total.toLocaleString(
             "vi-VN"
           )} VNĐ`;
           totalText.style.display = "block";
@@ -268,9 +274,8 @@
         animate();
       }
 
-      let newItemHideTimeout;
       // Hiển thị item mới
-      function showNewItem(donation) {
+      function showNewItem(donation, keepVisible = false) {
         if (!config.showNewItem) return;
 
         const newItemText = document.getElementById("new-item-text");
@@ -280,6 +285,121 @@
         newItemText.style.display = "block";
         newItemText.style.opacity = "1";
 
+        // Clear các timeout và interval cũ
+        if (newItemTimeout) clearTimeout(newItemTimeout);
+        if (newItemBlinkInterval) clearInterval(newItemBlinkInterval);
+        if (newItemHideTimeout) clearTimeout(newItemHideTimeout);
+
+        // Dừng auto loop khi có item mới
+        stopAutoLoop();
+        lastNewItemTime = Date.now();
+
+        function doBlink() {
+          let count = 0;
+          const blinkTimes = 3;
+          const blinkSpeed = 250;
+
+          const blinkTimer = setInterval(() => {
+            if (count >= blinkTimes * 2) {
+              clearInterval(blinkTimer);
+              newItemText.style.opacity = "1";
+              return;
+            }
+
+            newItemText.style.opacity = count % 2 === 0 ? "0" : "1";
+            count++;
+          }, blinkSpeed);
+        }
+
+        // Nhấp nháy lần đầu sau N giây
+        newItemTimeout = setTimeout(() => {
+          doBlink();
+
+          // Tiếp tục nhấp nháy mỗi N giây
+          newItemBlinkInterval = setInterval(() => {
+            doBlink();
+          }, config.newItemBlinkInterval * 1000);
+        }, config.newItemBlinkInterval * 1000);
+
+        // Nếu không keepVisible, ẩn sau thời gian quy định
+        if (!keepVisible) {
+          newItemHideTimeout = setTimeout(() => {
+            newItemText.style.display = "none";
+            // Bắt đầu auto loop sau khi ẩn
+            startAutoLoopCountdown();
+          }, (config.newItemDisplayTime || 10) * 1000);
+        }
+      }
+
+      // Bắt đầu đếm ngược để auto loop
+      function startAutoLoopCountdown() {
+        if (autoLoopTimeout) clearTimeout(autoLoopTimeout);
+
+        const autoLoopTime = (config.autoLoopTime || 30) * 1000;
+
+        autoLoopTimeout = setTimeout(() => {
+          startAutoLoop();
+        }, autoLoopTime);
+      }
+
+      // Bắt đầu auto loop hiển thị từng item
+      function startAutoLoop() {
+        if (config.donations.length === 0 || !config.showNewItem) return;
+
+        // Dừng auto loop cũ nếu có
+        stopAutoLoop();
+
+        currentAutoLoopIndex = 0;
+
+        function showNextItem() {
+          // Kiểm tra lại config mới nhất
+          const saved = localStorage.getItem("scrollingTextConfig");
+          if (saved) {
+            const latestConfig = JSON.parse(saved);
+            if (latestConfig.donations.length === 0) {
+              stopAutoLoop();
+              return;
+            }
+
+            // Cập nhật config
+            config.donations = latestConfig.donations;
+          }
+
+          if (config.donations.length === 0) {
+            stopAutoLoop();
+            return;
+          }
+
+          const donation = config.donations[currentAutoLoopIndex];
+
+          // Tạo bản sao để tránh ảnh hưởng logic showNewItem
+          const donationCopy = { ...donation };
+          showNewItemForAutoLoop(donationCopy);
+
+          currentAutoLoopIndex =
+            (currentAutoLoopIndex + 1) % config.donations.length;
+        }
+
+        // Hiển thị item đầu tiên ngay
+        showNextItem();
+
+        // Lặp lại sau mỗi (displayTime + 2) giây để có thời gian cho nhấp nháy
+        const intervalTime = (config.newItemDisplayTime || 10) * 1000 + 2000;
+        autoLoopInterval = setInterval(showNextItem, intervalTime);
+      }
+
+      // Hiển thị item cho auto loop (không dừng auto loop)
+      function showNewItemForAutoLoop(donation) {
+        if (!config.showNewItem) return;
+
+        const newItemText = document.getElementById("new-item-text");
+        newItemText.textContent = `${
+          donation.name
+        }: ${donation.amount.toLocaleString("vi-VN")} VNĐ`;
+        newItemText.style.display = "block";
+        newItemText.style.opacity = "1";
+
+        // Clear các timeout và interval cũ
         if (newItemTimeout) clearTimeout(newItemTimeout);
         if (newItemBlinkInterval) clearInterval(newItemBlinkInterval);
         if (newItemHideTimeout) clearTimeout(newItemHideTimeout);
@@ -301,18 +421,32 @@
           }, blinkSpeed);
         }
 
+        // Nhấp nháy lần đầu sau N giây
         newItemTimeout = setTimeout(() => {
           doBlink();
 
+          // Tiếp tục nhấp nháy mỗi N giây
           newItemBlinkInterval = setInterval(() => {
             doBlink();
           }, config.newItemBlinkInterval * 1000);
         }, config.newItemBlinkInterval * 1000);
 
-        if (newItemHideTimeout) clearTimeout(newItemHideTimeout);
+        // Ẩn sau thời gian quy định
         newItemHideTimeout = setTimeout(() => {
           newItemText.style.display = "none";
         }, (config.newItemDisplayTime || 10) * 1000);
+      }
+
+      // Dừng auto loop
+      function stopAutoLoop() {
+        if (autoLoopTimeout) {
+          clearTimeout(autoLoopTimeout);
+          autoLoopTimeout = null;
+        }
+        if (autoLoopInterval) {
+          clearInterval(autoLoopInterval);
+          autoLoopInterval = null;
+        }
       }
 
       // Kiểm tra thay đổi dữ liệu
@@ -324,7 +458,9 @@
           if (newConfig.donations.length > lastDonationCount) {
             const newDonation =
               newConfig.donations[newConfig.donations.length - 1];
-            showNewItem(newDonation);
+            const keepVisible = newDonation.keepVisible || false;
+
+            showNewItem(newDonation, keepVisible);
 
             const scrollingText = document.getElementById("scrolling-text");
             const currentPos = parseFloat(scrollingText.style.left) || 0;
@@ -339,6 +475,23 @@
               config = newConfig;
               lastDonationCount = config.donations.length;
               applyConfig();
+            }
+
+            // Nếu keepVisible, không bắt đầu countdown
+            if (!keepVisible) {
+              startAutoLoopCountdown();
+            }
+          } else if (newConfig.donations.length < lastDonationCount) {
+            // Có item bị xóa
+            config = newConfig;
+            lastDonationCount = config.donations.length;
+            applyConfig();
+
+            // Nếu không còn item nào keepVisible, ẩn new-item-text
+            const hasKeepVisible = config.donations.some((d) => d.keepVisible);
+            if (!hasKeepVisible) {
+              const newItemText = document.getElementById("new-item-text");
+              newItemText.style.display = "none";
             }
           } else {
             config = newConfig;
@@ -358,6 +511,19 @@
         loadData();
         startScrolling();
 
+        // Kiểm tra xem có item nào keepVisible không
+        const hasKeepVisible = config.donations.some((d) => d.keepVisible);
+        if (hasKeepVisible) {
+          const lastDonation = config.donations[config.donations.length - 1];
+          if (lastDonation.keepVisible) {
+            showNewItem(lastDonation, true);
+          }
+        } else if (config.donations.length > 0) {
+          // Bắt đầu auto loop ngay lập tức khi load trang
+          startAutoLoop();
+        }
+
+        // Kiểm tra cập nhật mỗi giây
         setInterval(checkForUpdates, 1000);
       });
 

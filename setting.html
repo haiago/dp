@@ -204,6 +204,16 @@
         width: auto;
         cursor: pointer;
       }
+
+      .keep-visible-badge {
+        display: inline-block;
+        padding: 2px 8px;
+        background: #17a2b8;
+        color: white;
+        border-radius: 3px;
+        font-size: 12px;
+        margin-left: 10px;
+      }
     </style>
   </head>
   <body>
@@ -235,6 +245,14 @@
             <div class="amount-preview" id="amount-preview"></div>
           </div>
         </div>
+
+        <div class="form-group checkbox-group">
+          <input type="checkbox" id="keep-visible" />
+          <label style="margin: 0"
+            >Giữ hiển thị (không tự động ẩn khi thêm item mới)</label
+          >
+        </div>
+
         <button class="btn btn-primary" onclick="addDonation()">Thêm</button>
 
         <!-- Hiển thị tổng cộng -->
@@ -363,6 +381,21 @@
           </div>
         </div>
 
+        <div class="form-group">
+          <label>Thời gian tự động lặp lại (giây):</label>
+          <input
+            type="number"
+            id="auto-loop-time"
+            value="30"
+            min="10"
+            max="300"
+          />
+          <small style="color: #666; display: block; margin-top: 5px">
+            Sau khoảng thời gian này mà không có item mới, hệ thống sẽ tự động
+            lặp lại hiển thị các item từ danh sách
+          </small>
+        </div>
+
         <button class="btn btn-success" onclick="saveConfig()">
           Lưu Cấu Hình
         </button>
@@ -452,27 +485,28 @@ Cảm ơn các bạn đã ủng hộ!</textarea
       let config = {
         donations: [],
         backgroundUrl: "",
-        fontSize: 48,
-        textPosition: 100,
+        fontSize: 60,
+        textPosition: 500,
         scrollSpeed: 100,
         loopTime: 10,
-        textColor: "#FFD700",
+        textColor: "#FF0000",
         showScrolling: true,
         showNewItem: true,
         newItemFontSize: 60,
         newItemColor: "#FF0000",
-        newItemPosition: 300,
+        newItemPosition: 500,
         newItemBlinkInterval: 3,
         newItemDisplayTime: 10,
         showTotal: true,
-        totalFontSize: 50,
-        totalColor: "#00FF00",
-        totalPosition: 200,
+        totalFontSize: 40,
+        totalColor: "#528515",
+        totalPosition: 600,
         showThankYou: true,
-        thankYouText: "Cảm ơn các bạn đã ủng hộ!",
+        thankYouText: "TRÂN TRỌNG CẢM ƠN QUÝ ÂN NHÂN",
         thankYouFontSize: 40,
-        thankYouColor: "#FFFFFF",
-        thankYouPosition: 500,
+        thankYouColor: "#f56666",
+        thankYouPosition: 700,
+        autoLoopTime: 30,
       };
 
       // Load dữ liệu
@@ -519,10 +553,18 @@ Cảm ơn các bạn đã ủng hộ!</textarea
         const amountInput = document
           .getElementById("donor-amount")
           .value.trim();
+        const keepVisible = document.getElementById("keep-visible").checked;
 
         if (name && amountInput) {
           const amount = parseFloat(amountInput.replace(/[^\d]/g, ""));
-          config.donations.push({ name, amount });
+
+          // Nếu có item cũ được đánh dấu keepVisible, xóa flag đó
+          config.donations = config.donations.map((d) => ({
+            ...d,
+            keepVisible: false,
+          }));
+
+          config.donations.push({ name, amount, keepVisible });
           saveData();
           updateDonationList();
           updateTotalDisplay();
@@ -531,6 +573,7 @@ Cảm ơn các bạn đã ủng hộ!</textarea
           document.getElementById("donor-name").value = "";
           document.getElementById("donor-amount").value = "";
           document.getElementById("amount-preview").textContent = "";
+          document.getElementById("keep-visible").checked = false;
 
           alert("Đã thêm thành công!");
         } else {
@@ -540,10 +583,12 @@ Cảm ơn các bạn đã ủng hộ!</textarea
 
       // Xóa donation
       function deleteDonation(index) {
-        config.donations.splice(index, 1);
-        saveData();
-        updateDonationList();
-        updateTotalDisplay();
+        if (confirm("Bạn có chắc muốn xóa item này?")) {
+          config.donations.splice(index, 1);
+          saveData();
+          updateDonationList();
+          updateTotalDisplay();
+        }
       }
 
       // Xóa tất cả
@@ -568,12 +613,16 @@ Cảm ơn các bạn đã ủng hộ!</textarea
 
         config.donations.forEach((donation, index) => {
           const li = document.createElement("li");
+          const badge = donation.keepVisible
+            ? '<span class="keep-visible-badge">Giữ hiển thị</span>'
+            : "";
           li.innerHTML = `
-                    <span>${donation.name}: ${donation.amount.toLocaleString(
-            "vi-VN"
-          )} VNĐ</span>
-                    <button class="btn btn-danger" onclick="deleteDonation(${index})">Xóa</button>
-                `;
+            <span>
+              ${donation.name}: ${donation.amount.toLocaleString("vi-VN")} VNĐ
+              ${badge}
+            </span>
+            <button class="btn btn-danger" onclick="deleteDonation(${index})">Xóa</button>
+          `;
           list.appendChild(li);
         });
       }
@@ -607,6 +656,9 @@ Cảm ơn các bạn đã ủng hộ!</textarea
         );
         config.newItemDisplayTime = parseInt(
           document.getElementById("new-item-display-time").value
+        );
+        config.autoLoopTime = parseInt(
+          document.getElementById("auto-loop-time").value
         );
 
         // Cấu hình tổng cộng
@@ -659,6 +711,8 @@ Cảm ơn các bạn đã ủng hộ!</textarea
           config.newItemBlinkInterval || 3;
         document.getElementById("new-item-display-time").value =
           config.newItemDisplayTime || 10;
+        document.getElementById("auto-loop-time").value =
+          config.autoLoopTime || 30;
 
         document.getElementById("show-total").checked =
           config.showTotal !== false;
