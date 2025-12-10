@@ -304,10 +304,11 @@
       function showNewItem(donation, keepVisible = false) {
         if (!config.showNewItem) return;
 
-        const newItemText = document.getElementById("new-item-text");
-        newItemText.textContent = `${
-          donation.name
-        }: ${donation.amount.toLocaleString("vi-VN")} VNĐ`;
+        newItemText.innerHTML = `
+          <span style="display: block; text-align: center;">
+            ${donation.name}<br>
+            ${donation.amount.toLocaleString("vi-VN")} VNĐ
+          </span>`;
         newItemText.style.display = "block";
         newItemText.style.opacity = "1";
 
