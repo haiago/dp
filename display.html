@@ -322,6 +322,8 @@
         lastNewItemTime = Date.now();
 
         function doBlink() {
+          // Nếu blinkInterval và displayTime bằng nhau thì không nhấp nháy
+          if (config.newItemBlinkInterval == config.newItemDisplayTime) return;
           let count = 0;
           const blinkTimes = 3;
           const blinkSpeed = 250;
