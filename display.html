@@ -303,7 +303,7 @@
       // Hiển thị item mới
       function showNewItem(donation, keepVisible = false) {
         if (!config.showNewItem) return;
-
+        const newItemText = document.getElementById("new-item-text");
         newItemText.innerHTML = `
           <span style="display: block; text-align: center;">
             ${donation.name}<br>
@@ -360,6 +360,10 @@
 
       // Bắt đầu đếm ngược để auto loop
       function startAutoLoopCountdown() {
+        console.log(
+          "AutoLoop bắt đầu đếm ngược: ",
+          new Date().toLocaleTimeString()
+        );
         if (autoLoopTimeout) clearTimeout(autoLoopTimeout);
 
         const autoLoopTime = (config.autoLoopTime || 30) * 1000;
